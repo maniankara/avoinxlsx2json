@@ -20,9 +20,14 @@ class Main
     "leppvaara" => "60.2166658,24.8166634",
     "tikkurila" => "60.171999312,24.801496794" 
   }
-  XLSX_SHEETS = {
+
+  # Maps the sheet number with the pollution metric
+  XLSX_SHEET_MAPPING = {
     "NO" => 2,
-    "NO2" => 4
+    "NO2" => 4,
+    "PM10" => 6,
+    "SO2" => 11,
+    "CO" => 13
   }
 
   attr_reader :json_path
@@ -46,14 +51,18 @@ class Main
   def run
     parse_args
     u_json_objs = UniqueJsonObjects.new
-    Xlsx2json::Transformer.execute XLSX_PATH, 2, @json_path, header_row_number: 4
-    JSON.parse(File.open(json_path).read).each do |e|
-      location = []
-      e.each do |loc,val|
-        next if loc == ("vuosi" or "kuukausi")
-        u_json_objs.add("NO", loc, "#{e['vuosi']}-#{sprintf '%02d',e['kuukausi']}-01", val)  
-      end
-      
+    # Loop through all the sheets for params
+    XLSX_SHEET_MAPPING.each do |param, sheet_no|
+      #Convert each sheet to json (file)
+      Xlsx2json::Transformer.execute XLSX_PATH, sheet_no, @json_path, header_row_number: 4
+      # Read the file for each json obj and convert it to another form
+      JSON.parse(File.open(json_path).read).each_with_index do |e,i|
+        location = []
+        e.each do |loc,val|
+          next if ["vuosi", "kuukausi"].include? loc.downcase
+          u_json_objs.add(param, loc, "#{e['vuosi']}-#{sprintf '%02d',e['kuukausi']}-01", val)  
+        end      
+      end    
     end
     u_json_objs.dump.to_json
   end
