@@ -17,7 +17,7 @@ class Main
     "mannerheimintie" => "60.167999328,24.937329584",
     "vallila" => "60.18999924,24.953996184",
     "kallio" => "60.183832598,24.942829562",
-    "leppvaara" => "60.2166658,24.8166634",
+    "leppavaara" => "60.2166658,24.8166634",
     "tikkurila" => "60.171999312,24.801496794" 
   }
 
@@ -60,6 +60,7 @@ class Main
         location = []
         e.each do |loc,val|
           next if ["vuosi", "kuukausi"].include? loc.downcase
+          val = 0 if val and val < 0
           u_json_objs.add(param, loc, "#{e['vuosi']}-#{sprintf '%02d',e['kuukausi']}-01", val)  
         end      
       end    
